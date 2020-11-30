@@ -22,6 +22,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"k8s.io/client-go/rest"
 	"os"
 	"path/filepath"
 
@@ -43,16 +44,20 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 )
 
-func main() {
+func buildConfigFromDir() (*rest.Config, error){
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+	return clientcmd.BuildConfigFromFlags("", *kubeconfig)
+}
+
+func main() {
 	flag.Parse()
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := buildConfigFromDir()
 	if err != nil {
 		panic(err)
 	}
